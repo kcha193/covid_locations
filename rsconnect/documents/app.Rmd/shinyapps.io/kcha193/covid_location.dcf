@@ -1,0 +1,13 @@
+name: covid_location
+title: covid_location
+username:
+account: kcha193
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 4523745
+bundleId: 4953262
+url: https://kcha193.shinyapps.io/covid_location/
+when: 1629717553.51658
+lastSyncTime: 1629717553.51658
+asMultiple: FALSE
+asStatic: FALSE
