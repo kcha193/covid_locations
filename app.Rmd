@@ -3,11 +3,12 @@ title: "COVID-19: Contact tracing locations of interest"
 output: 
   flexdashboard::flex_dashboard:
     orientation: columns
-    vertical_layout: fill
+    social: menu
 runtime: shiny
 ---
 
 ```{r setup, include=FALSE}
+library(shiny)
 library(flexdashboard)
 library(tidyverse)
 library(lubridate)
@@ -18,8 +19,6 @@ library(leaflet)
 locations_of_interest <- 
  rgdal::readOGR("https://raw.githubusercontent.com/minhealthnz/nz-covid-data/main/locations-of-interest/august-2021/locations-of-interest.geojson") %>% 
  as_tibble()
-
-
 
 locations_of_interest$Start_time <-
  as.POSIXct(locations_of_interest$Start,
@@ -55,24 +54,152 @@ locations_of_interest$info <- paste0(
  locations_of_interest$Advice,
  "<br>"
 )
+
+locations_of_interest$Added_Date <- 
+  ymd(sapply(strsplit(locations_of_interest$Added, " "), function(x) x[1]))
+
+locations_of_interest$Added_Time <- 
+  hms(sapply(strsplit(locations_of_interest$Added, " "), function(x) x[2]))
+
+
 ```
 
-Column 
+
+Inputs {.sidebar}
+-----------------------------------------------------------------------
+
+**Last updated at `r max(locations_of_interest$Added_Date + locations_of_interest$Added_Time, na.rm = TRUE)`. **
+
+```{r}
+selectInput(
+  "added",
+  label = h3("Date of new locations are added"),
+  choices = c("All",
+              as.character(sort(unique(locations_of_interest$Added_Date),
+                decreasing = TRUE))),
+  selected = "All"
+)
+
+
+selectInput(
+  "city",
+  label = h3("City"),
+  choices = c("All", sort(unique(locations_of_interest$City))),
+  selected = "All"
+)
+
+renderUI({
+  
+  if (input$city != "All") {
+    locations_of_interest <-
+      locations_of_interest %>%
+      filter(City == input$city)
+  }
+  
+  if (input$added != "All") {
+    locations_of_interest <-
+      locations_of_interest %>%
+      filter(Added == input$added)
+  }
+  
+  
+  selectInput(
+  "start_time",
+  label = h3("Event Start Date"),
+  choices = c("All",
+              as.character(sort(
+                unique(as.Date(locations_of_interest$Start_time)),
+                decreasing = TRUE
+              ))),
+  selected = "All"
+)
+  
+})
+
+
+
+
+
+
+```
+
+Column {data-width=600}
 -----------------------------------------------------------------------
 
 ### 
 
 ```{r}
 
-locations_of_interest %>%
- leaflet() %>%
- addTiles() %>%
- addCircleMarkers(lng = ~ coords.x1,
-                  lat = ~ coords.x2,
-                  popup = ~ info)
+renderLeaflet({
+ 
+   if (input$city != "All") {
+    locations_of_interest <-
+      locations_of_interest %>%
+      filter(City == input$city)
+  }
+  
+  if (input$added != "All") {
+    locations_of_interest <-
+      locations_of_interest %>%
+      filter(Added_Date == input$added)
+  }
+  
+
+  if (input$start_time != "All") {
+    locations_of_interest <-
+      locations_of_interest %>%
+      filter(as.Date(Start_time) == input$start_time)
+  }
+  
+  
+  locations_of_interest %>%
+    leaflet() %>%
+    addTiles() %>%
+    addCircleMarkers(
+      lng = ~ coords.x1,
+      lat = ~ coords.x2,
+      popup = ~ info
+    )
+})
 ```
 
-`
+Column {data-width=400}
+-----------------------------------------------------------------------
 
+### 
+
+```{r}
+
+renderDT({
+  
+     if (input$city != "All") {
+    locations_of_interest <-
+      locations_of_interest %>%
+      filter(City == input$city)
+  }
+  
+  if (input$added != "All") {
+    locations_of_interest <-
+      locations_of_interest %>%
+      filter(Added_Date == input$added)
+  }
+  
+
+  if (input$start_time != "All") {
+    locations_of_interest <-
+      locations_of_interest %>%
+      filter(as.Date(Start_time) == input$start_time)
+  }
+  
+  
+  locations_of_interest %>% 
+    select(Event:End) %>% 
+    datatable(options = list( pageLength = 6))
+  
+})
+
+
+
+```
 
 
