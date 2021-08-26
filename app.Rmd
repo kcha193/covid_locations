@@ -61,6 +61,8 @@ locations_of_interest$Added_Date <-
 locations_of_interest$Added_Time <- 
   hms(sapply(strsplit(locations_of_interest$Added, " "), function(x) x[2]))
 
+locations_of_interest$Added_Date[is.na(locations_of_interest$Added_Date)] <-
+  min(locations_of_interest$Added_Date, na.rm = TRUE) - 1
 
 ```
 
@@ -75,9 +77,12 @@ Inputs {.sidebar}
 strong(p("Ministry of Health Data was last updated at", 
   max(locations_of_interest$Added_Date + locations_of_interest$Added_Time, na.rm = TRUE)))
 
+strong(p("Note this map and table does not have information about public transort."))
+
+
 selectInput(
   "added",
-  label = h4("Date of new locations are added"),
+  label = h4("Date of new locations was added"),
   choices = c("All",
               as.character(sort(unique(locations_of_interest$Added_Date),
                 decreasing = TRUE))),
