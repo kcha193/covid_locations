@@ -68,12 +68,16 @@ locations_of_interest$Added_Time <-
 Inputs {.sidebar}
 -----------------------------------------------------------------------
 
-**Last updated at `r max(locations_of_interest$Added_Date + locations_of_interest$Added_Time, na.rm = TRUE)`. **
+
 
 ```{r}
+
+strong(p("Ministry of Health Data was last updated at", 
+  max(locations_of_interest$Added_Date + locations_of_interest$Added_Time, na.rm = TRUE)))
+
 selectInput(
   "added",
-  label = h3("Date of new locations are added"),
+  label = h4("Date of new locations are added"),
   choices = c("All",
               as.character(sort(unique(locations_of_interest$Added_Date),
                 decreasing = TRUE))),
@@ -83,13 +87,14 @@ selectInput(
 
 selectInput(
   "city",
-  label = h3("City"),
-  choices = c("All", sort(unique(locations_of_interest$City))),
+  label = h4("City"),
+  choices = c("All", sort(unique(
+    locations_of_interest$City
+  ))),
   selected = "All"
 )
 
 renderUI({
-  
   if (input$city != "All") {
     locations_of_interest <-
       locations_of_interest %>%
@@ -98,27 +103,43 @@ renderUI({
   
   if (input$added != "All") {
     locations_of_interest <-
-      locations_of_interest %>%
-      filter(Added == input$added)
+      locations_of_interest  %>%
+      filter(Added_Date == input$added)
   }
   
   
   selectInput(
-  "start_time",
-  label = h3("Event Start Date"),
-  choices = c("All",
-              as.character(sort(
-                unique(as.Date(locations_of_interest$Start_time)),
-                decreasing = TRUE
-              ))),
-  selected = "All"
-)
+    "start_time",
+    label = h4("Event Start Date"),
+    choices = c("All",
+                as.character(sort(
+                  unique(as.Date(locations_of_interest$Start_time)),
+                  decreasing = TRUE
+                ))),
+    selected = "All"
+  )
   
 })
 
 
+h4("Note:")
+p(
+  "Map and table are based from the data in the Ministry of Health's COVID-19: Contact tracing locations of interest in ",
+  a("here",
+    href = "https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-health-advice-public/contact-tracing-covid-19/covid-19-contact-tracing-locations-interest"),
+  ", which is under the Ministry of Health's ",
+  a("creative commons license",
+    href = "https://www.health.govt.nz/about-site/copyright")
+)
 
 
+h4("Contact:")
+h5(a("Kevin Chang", href = "mailto:kevin.ct.chang@gmail.com"))
+p(
+  "Source code can be founded in ",
+  a("here",
+    href = "https://github.com/kcha193/covid_locations")
+)
 
 
 ```
@@ -126,7 +147,8 @@ renderUI({
 Column {data-width=600}
 -----------------------------------------------------------------------
 
-### 
+### Locations of interest map
+
 
 ```{r}
 
@@ -166,7 +188,7 @@ renderLeaflet({
 Column {data-width=400}
 -----------------------------------------------------------------------
 
-### 
+### Locations of interest table
 
 ```{r}
 
