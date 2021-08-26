@@ -199,7 +199,7 @@ Column {data-width=400}
 
 renderDT({
   
-     if (input$city != "All") {
+  if (input$city != "All") {
     locations_of_interest <-
       locations_of_interest %>%
       filter(City == input$city)
