@@ -42,14 +42,13 @@ locations_of_interest <-
       "<br>",
       "<strong>Advice</strong>: ", Advice,
       "<br>"
-    )
+    ),
+    public_transport = ifelse(is.na(LAT), TRUE, FALSE)
   ) 
 
 locations_of_interest$Added_Date[is.na(locations_of_interest$Added_Date)] <-
   min(locations_of_interest$Added_Date, na.rm = TRUE) - 1
 
-locations_of_interest$public_transport <- 
-  ifelse(is.na(locations_of_interest$LAT), TRUE, FALSE)
 
 ```
 
