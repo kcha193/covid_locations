@@ -5,9 +5,9 @@ account: kcha193
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 4523745
-bundleId: 4967186
+bundleId: 4976061
 url: https://kcha193.shinyapps.io/covid_location/
-when: 1629977765.88073
-lastSyncTime: 1629977765.88073
+when: 1630212890.28851
+lastSyncTime: 1630212890.28851
 asMultiple: FALSE
 asStatic: FALSE

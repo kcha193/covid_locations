@@ -11,56 +11,39 @@ runtime: shiny
 library(shiny)
 library(flexdashboard)
 
-library(tidyverse)
-library(lubridate)
+library(dplyr)
 
 library(DT)
 library(leaflet)
 
 
-locations_of_interest <- 
- read_csv("https://raw.githubusercontent.com/minhealthnz/nz-covid-data/main/locations-of-interest/august-2021/locations-of-interest.csv") 
+file_path <- "https://raw.githubusercontent.com/minhealthnz/nz-covid-data/main/locations-of-interest/august-2021/locations-of-interest.csv"
 
-locations_of_interest$Start_time <-
- as.POSIXct(locations_of_interest$Start,
-            format = "%d/%m/%Y, %I:%M %p")
-           
-locations_of_interest$End_time <-
- as.POSIXct(locations_of_interest$End,
-            format = "%d/%m/%Y, %I:%M %p")
-                    
-      
-locations_of_interest$info <- paste0(
- "<H3>Event infomation</H3>",
- "<strong>Event</strong>: ",
- locations_of_interest$Event,
- "<br>",
- "<strong>Location</strong>: ",
- locations_of_interest$Location,
- "<br>",
- 
- "<strong>City</strong>: ",
- locations_of_interest$City,
- "<br>",
- 
- "<strong>Start date/time</strong>: ",
- locations_of_interest$Start,
- "<br>",
- 
- "<strong>End date/time</strong>: ",
- locations_of_interest$End,
- "<br>",
- 
- "<strong>Advice</strong>: ",
- locations_of_interest$Advice,
- "<br>"
-)
-
-locations_of_interest$Added_Date <- 
-  dmy(sapply(strsplit(locations_of_interest$Added, " "), function(x) x[1]))
-
-locations_of_interest$Added_Time <- 
-  hm(sapply(strsplit(locations_of_interest$Added, " "), function(x) x[2]))
+locations_of_interest <-
+  readr::read_csv(file_path) %>%
+  mutate(
+    Start_time = as.POSIXct(Start, format = "%d/%m/%Y, %I:%M %p"),
+    End_time = as.POSIXct(End, format = "%d/%m/%Y, %I:%M %p"),
+    Added_Date = lubridate::dmy(sapply(strsplit(Added, " "), function(x)
+      x[1])),
+    Added_Time = lubridate::hm(sapply(strsplit(Added, " "), function(x)
+      x[2])),
+    info =  paste0(
+      "<H3>Event infomation</H3>",
+      "<strong>Event</strong>: ", Event,
+      "<br>",
+      "<strong>Location</strong>: ", Location,
+      "<br>",
+      "<strong>City</strong>: ", City,
+      "<br>",
+      "<strong>Start date/time</strong>: ", Start,
+      "<br>",
+      "<strong>End date/time</strong>: ", End,
+      "<br>",
+      "<strong>Advice</strong>: ", Advice,
+      "<br>"
+    )
+  ) 
 
 locations_of_interest$Added_Date[is.na(locations_of_interest$Added_Date)] <-
   min(locations_of_interest$Added_Date, na.rm = TRUE) - 1
@@ -78,8 +61,8 @@ Inputs {.sidebar}
 
 ```{r}
 
-strong(p("Ministry of Health Data was last updated at", 
-  max(locations_of_interest$Added_Date + locations_of_interest$Added_Time, na.rm = TRUE)))
+p("Ministry of Health Data was last updated at", 
+  strong(max(locations_of_interest$Added_Date + locations_of_interest$Added_Time, na.rm = TRUE)))
 
 p(
   "Please refer to the official ",
@@ -89,8 +72,11 @@ p(
 )
 
 
+h4(strong("Use options below to filter down the information of interest"))
 
-checkboxInput("public_transport", "Public Transport only", value = FALSE)
+checkboxInput("public_transport", 
+              strong("Public Transport only (Nothing will display on the map)"), 
+              value = FALSE)
 
 selectInput(
   "added",
@@ -166,7 +152,7 @@ p(
 
 ```
 
-Column {data-width=600}
+Column {data-width=500}
 -----------------------------------------------------------------------
 
 ### Locations of interest map
@@ -176,7 +162,7 @@ Column {data-width=600}
 
 renderLeaflet({
  
-  if (input$public_transport) {
+ if (input$public_transport) {
     locations_of_interest <-
       locations_of_interest %>%
       filter(public_transport == TRUE)
@@ -201,7 +187,7 @@ renderLeaflet({
       locations_of_interest %>%
       filter(as.Date(Start_time) == input$start_time)
   }
-  
+   
   
   locations_of_interest %>%
     leaflet() %>%
@@ -214,7 +200,7 @@ renderLeaflet({
 })
 ```
 
-Column {data-width=400}
+Column {data-width=500}
 -----------------------------------------------------------------------
 
 ### Locations of interest table
@@ -223,11 +209,12 @@ Column {data-width=400}
 
 renderDT({
   
-  if (input$public_transport) {
+ if (input$public_transport) {
     locations_of_interest <-
       locations_of_interest %>%
       filter(public_transport == TRUE)
   }
+  
   
   if (input$city != "All") {
     locations_of_interest <-
@@ -247,10 +234,11 @@ renderDT({
       locations_of_interest %>%
       filter(as.Date(Start_time) == input$start_time)
   }
-  
+ 
   
   locations_of_interest %>% 
-    select(Event:End) %>% 
+    select(Added_Date, Event:End) %>% 
+    arrange(desc(Added_Date)) %>% 
     datatable(options = list( pageLength = 6))
   
 })
