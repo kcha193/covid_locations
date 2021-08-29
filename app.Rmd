@@ -10,15 +10,16 @@ runtime: shiny
 ```{r setup, include=FALSE}
 library(shiny)
 library(flexdashboard)
+
 library(tidyverse)
 library(lubridate)
+
 library(DT)
 library(leaflet)
 
 
 locations_of_interest <- 
- rgdal::readOGR("https://raw.githubusercontent.com/minhealthnz/nz-covid-data/main/locations-of-interest/august-2021/locations-of-interest.geojson") %>% 
- as_tibble()
+ read_csv("https://raw.githubusercontent.com/minhealthnz/nz-covid-data/main/locations-of-interest/august-2021/locations-of-interest.csv") 
 
 locations_of_interest$Start_time <-
  as.POSIXct(locations_of_interest$Start,
@@ -56,13 +57,16 @@ locations_of_interest$info <- paste0(
 )
 
 locations_of_interest$Added_Date <- 
-  ymd(sapply(strsplit(locations_of_interest$Added, " "), function(x) x[1]))
+  dmy(sapply(strsplit(locations_of_interest$Added, " "), function(x) x[1]))
 
 locations_of_interest$Added_Time <- 
-  hms(sapply(strsplit(locations_of_interest$Added, " "), function(x) x[2]))
+  hm(sapply(strsplit(locations_of_interest$Added, " "), function(x) x[2]))
 
 locations_of_interest$Added_Date[is.na(locations_of_interest$Added_Date)] <-
   min(locations_of_interest$Added_Date, na.rm = TRUE) - 1
+
+locations_of_interest$public_transport <- 
+  ifelse(is.na(locations_of_interest$LAT), TRUE, FALSE)
 
 ```
 
@@ -77,15 +81,25 @@ Inputs {.sidebar}
 strong(p("Ministry of Health Data was last updated at", 
   max(locations_of_interest$Added_Date + locations_of_interest$Added_Time, na.rm = TRUE)))
 
-strong(p("Note this map and table does not have information about public transort."))
+p(
+  "Please refer to the official ",
+  a("Ministry of Health website's locations of interest",
+    href = "https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-health-advice-public/contact-tracing-covid-19/covid-19-contact-tracing-locations-interest"),
+  " for the most up to date list of locations."
+)
 
+
+
+checkboxInput("public_transport", "Public Transport only", value = FALSE)
 
 selectInput(
   "added",
   label = h4("Date of new locations was added"),
   choices = c("All",
-              as.character(sort(unique(locations_of_interest$Added_Date),
-                decreasing = TRUE))),
+              as.character(sort(
+                unique(locations_of_interest$Added_Date),
+                decreasing = TRUE
+              ))),
   selected = "All"
 )
 
@@ -98,8 +112,10 @@ selectInput(
   ))),
   selected = "All"
 )
+  
 
 renderUI({
+  
   if (input$city != "All") {
     locations_of_interest <-
       locations_of_interest %>%
@@ -138,6 +154,7 @@ p(
 )
 
 
+
 h4("Contact:")
 h5(a("Kevin Chang", href = "mailto:kevin.ct.chang@gmail.com"))
 p(
@@ -159,7 +176,14 @@ Column {data-width=600}
 
 renderLeaflet({
  
-   if (input$city != "All") {
+  if (input$public_transport) {
+    locations_of_interest <-
+      locations_of_interest %>%
+      filter(public_transport == TRUE)
+  }
+  
+  
+  if (input$city != "All") {
     locations_of_interest <-
       locations_of_interest %>%
       filter(City == input$city)
@@ -183,8 +207,8 @@ renderLeaflet({
     leaflet() %>%
     addTiles() %>%
     addCircleMarkers(
-      lng = ~ coords.x1,
-      lat = ~ coords.x2,
+      lng = ~ LNG,
+      lat = ~ LAT,
       popup = ~ info
     )
 })
@@ -198,6 +222,12 @@ Column {data-width=400}
 ```{r}
 
 renderDT({
+  
+  if (input$public_transport) {
+    locations_of_interest <-
+      locations_of_interest %>%
+      filter(public_transport == TRUE)
+  }
   
   if (input$city != "All") {
     locations_of_interest <-
