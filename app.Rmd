@@ -4,6 +4,7 @@ output:
   flexdashboard::flex_dashboard:
     orientation: columns
     social: menu
+    source_code: embed
 runtime: shiny
 ---
 
@@ -73,10 +74,6 @@ p(
 
 h4(strong("Use options below to filter down the information of interest"))
 
-checkboxInput("public_transport", 
-              strong("Public Transport only (Nothing will display on the map)"), 
-              value = FALSE)
-
 selectInput(
   "added",
   label = h4("Date of new locations was added"),
@@ -126,6 +123,11 @@ renderUI({
   )
   
 })
+
+
+checkboxInput("public_transport", 
+              strong("Public Transport only (Nothing will display on the map)"), 
+              value = FALSE)
 
 
 h4("Note:")

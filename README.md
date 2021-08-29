@@ -1,6 +1,6 @@
 # COVID-19: Contact tracing locations of interest
 
-This shiny application helps the users to visualise the map and table of locations of interest for people who may be contacts of COVID-19 cases in the community.
+This shiny application helps the users to visualise the map and table of locations of interest for people who may be contacts of COVID-19 cases in the community. This shiny application is currently live and can be found in [https://kcha193.shinyapps.io/covid_locations/](https://kcha193.shinyapps.io/covid_locations/).
 
 This application provides users filtering options on 
 
