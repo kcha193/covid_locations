@@ -54,7 +54,7 @@ locations_of_interest$public_transport <-
 ```
 
 
-Inputs {.sidebar}
+Inputs {.sidebar }
 -----------------------------------------------------------------------
 
 
