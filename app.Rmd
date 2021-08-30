@@ -76,7 +76,7 @@ h4(strong("Use options below to filter down the information of interest"))
 
 selectInput(
   "added",
-  label = h4("Date of new locations were added"),
+  label = h4("Date of new locations was added"),
   choices = c("All",
               as.character(sort(
                 unique(locations_of_interest$Added_Date),
