@@ -59,7 +59,7 @@ Inputs {.sidebar }
 
 
 
-```{r}
+```{r sidebar}
 
 p("Ministry of Health Data was last updated at", 
   strong(max(locations_of_interest$Added_Date + locations_of_interest$Added_Time, na.rm = TRUE)))
@@ -76,7 +76,7 @@ h4(strong("Use options below to filter down the information of interest"))
 
 selectInput(
   "added",
-  label = h4("Date of new locations was added"),
+  label = h4("Date of new locations were added"),
   choices = c("All",
               as.character(sort(
                 unique(locations_of_interest$Added_Date),
@@ -97,7 +97,8 @@ selectInput(
   
 
 renderUI({
-  
+  req(input$added, input$city)
+      
   if (input$city != "All") {
     locations_of_interest <-
       locations_of_interest %>%
@@ -128,8 +129,6 @@ renderUI({
 checkboxInput("public_transport", 
               strong("Public Transport only (Nothing will display on the map)"), 
               value = FALSE)
-
-
 h4("Note:")
 p(
   "Map and table are based from the data in the Ministry of Health's COVID-19: Contact tracing locations of interest in ",
@@ -139,9 +138,6 @@ p(
   a("creative commons license",
     href = "https://www.health.govt.nz/about-site/copyright")
 )
-
-
-
 h4("Contact:")
 h5(a("Kevin Chang", href = "mailto:kevin.ct.chang@gmail.com"))
 p(
@@ -149,6 +145,44 @@ p(
   a("here",
     href = "https://github.com/kcha193/covid_locations")
 )
+```
+
+
+
+```{r data}
+# Reactive value contains the data from the filtering by the user
+new_location_data <-
+  reactive({
+    req(input$start_time)
+    
+    if (input$public_transport) {
+      locations_of_interest <-
+        locations_of_interest %>%
+        filter(public_transport == TRUE)
+    }
+    
+    
+    if (input$city != "All") {
+      locations_of_interest <-
+        locations_of_interest %>%
+        filter(City == input$city)
+    }
+    
+    if (input$added != "All") {
+      locations_of_interest <-
+        locations_of_interest %>%
+        filter(Added_Date == input$added)
+    }
+    
+    
+    if (input$start_time != "All") {
+      locations_of_interest <-
+        locations_of_interest %>%
+        filter(as.Date(Start_time) == input$start_time)
+    }
+    
+    return(locations_of_interest)
+  })
 
 
 ```
@@ -159,45 +193,13 @@ Column {data-width=500}
 ### Locations of interest map
 
 
-```{r}
+```{r map}
 
 renderLeaflet({
- 
- if (input$public_transport) {
-    locations_of_interest <-
-      locations_of_interest %>%
-      filter(public_transport == TRUE)
-  }
-  
-  
-  if (input$city != "All") {
-    locations_of_interest <-
-      locations_of_interest %>%
-      filter(City == input$city)
-  }
-  
-  if (input$added != "All") {
-    locations_of_interest <-
-      locations_of_interest %>%
-      filter(Added_Date == input$added)
-  }
-  
-
-  if (input$start_time != "All") {
-    locations_of_interest <-
-      locations_of_interest %>%
-      filter(as.Date(Start_time) == input$start_time)
-  }
-   
-  
-  locations_of_interest %>%
+  new_location_data() %>%
     leaflet() %>%
     addTiles() %>%
-    addCircleMarkers(
-      lng = ~ LNG,
-      lat = ~ LAT,
-      popup = ~ info
-    )
+    addCircleMarkers(lng = ~ LNG, lat = ~ LAT, popup = ~ info)
 })
 ```
 
@@ -206,46 +208,13 @@ Column {data-width=500}
 
 ### Locations of interest table
 
-```{r}
-
+```{r table}
 renderDT({
-  
- if (input$public_transport) {
-    locations_of_interest <-
-      locations_of_interest %>%
-      filter(public_transport == TRUE)
-  }
-  
-  
-  if (input$city != "All") {
-    locations_of_interest <-
-      locations_of_interest %>%
-      filter(City == input$city)
-  }
-  
-  if (input$added != "All") {
-    locations_of_interest <-
-      locations_of_interest %>%
-      filter(Added_Date == input$added)
-  }
-  
-
-  if (input$start_time != "All") {
-    locations_of_interest <-
-      locations_of_interest %>%
-      filter(as.Date(Start_time) == input$start_time)
-  }
- 
-  
-  locations_of_interest %>% 
+  new_location_data() %>% 
     select(Added_Date, Event:End) %>% 
     arrange(desc(Added_Date)) %>% 
     datatable(options = list( pageLength = 6))
-  
 })
-
-
-
 ```
 
 
