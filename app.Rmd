@@ -47,6 +47,16 @@ locations_of_interest <-
     public_transport = ifelse(is.na(LAT), TRUE, FALSE)
   ) 
 
+# For different date formats 
+locations_of_interest$Added_Date[is.na(locations_of_interest$Added_Date)] <-
+  lubridate::ymd(sapply(strsplit(locations_of_interest$Added[
+    is.na(locations_of_interest$Added_Date)], " "), function(x) x[1]))
+
+locations_of_interest$Added_Time[is.na(locations_of_interest$Added_Time)] <-
+  lubridate::hms(sapply(strsplit(locations_of_interest$Added[
+    is.na(locations_of_interest$Added_Time)], " "), function(x) x[2]))
+
+# Use the initial date for missing entries
 locations_of_interest$Added_Date[is.na(locations_of_interest$Added_Date)] <-
   min(locations_of_interest$Added_Date, na.rm = TRUE) - 1
 
@@ -76,7 +86,7 @@ h4(strong("Use options below to filter down the information of interest"))
 
 selectInput(
   "added",
-  label = h4("Date of new locations was added"),
+  label = h4("Date new location added"),
   choices = c("All",
               as.character(sort(
                 unique(locations_of_interest$Added_Date),
@@ -190,7 +200,7 @@ new_location_data <-
 Column {data-width=500}
 -----------------------------------------------------------------------
 
-### Locations of interest map
+### Locations of interest map (Click on circle markers for more info)
 
 
 ```{r map}
