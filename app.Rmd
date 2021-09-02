@@ -21,7 +21,7 @@ library(leaflet)
 file_path <- "https://raw.githubusercontent.com/minhealthnz/nz-covid-data/main/locations-of-interest/august-2021/locations-of-interest.csv"
 
 locations_of_interest <-
-  readr::read_csv(file_path) %>%
+  readr::read_csv(pins::pin(file_path)) %>%
   mutate(
     Start_time = as.POSIXct(Start, format = "%d/%m/%Y, %I:%M %p"),
     End_time = as.POSIXct(End, format = "%d/%m/%Y, %I:%M %p"),
