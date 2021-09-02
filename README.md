@@ -6,9 +6,9 @@ This shiny application helps the users to visualise the map and table of locatio
 
 This application provides users to filter down the selection for
 
--   date of the new locations was added
--   city of the locations, and
--   start date of each event
++ the date new locations were added,
++ the city of location (although it is mostly Auckland), and
++ the starting dates of the relevant times of these locations.
 
 to narrow down the amount the information provided.
 
