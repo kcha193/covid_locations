@@ -19,7 +19,7 @@ locations_of_interest <-
     Added_Time = lubridate::hm(sapply(strsplit(Added, " "), function(x)
       x[2])),
     info =  paste0(
-      "<H3>Event infomation</H3>",
+      "<H6>Event infomation</H6>",
       "<strong>Event</strong>: ", Event,
       "<br>",
       "<strong>Location</strong>: ", Location,
@@ -52,19 +52,15 @@ locations_of_interest$Added_Date[is.na(locations_of_interest$Added_Date)] <-
 
 # Define UI for application that draws a histogram
 ui <- material_page(
-    title = "COVID-19",
+    title = "NZ COVID-19",
 
     nav_bar_color = "teal lighten-1", 
 
-    h4("Contact tracing locations of interest"),
+    h4("Locations of interest"),
     
     material_side_nav(
         image_source = "https://cdn.auckland.ac.nz/aem/content/auckland/en/news/2021/05/19/lessons-from-our-covid-tracing-app/jcr:content/leftpar/imagecomponent/image.img.1024.medium.jpg/1621379069999.jpg",
-        p("Please refer to the official ",
-            a("Ministry of Health website's locations of interest",
-              href = "https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-health-advice-public/contact-tracing-covid-19/covid-19-contact-tracing-locations-interest"),
-            " for the most up to date list of locations."
-        ),
+        
         
         
         p(
@@ -86,7 +82,12 @@ ui <- material_page(
     
     p("Ministry of Health Data was last updated at", 
       strong(max(locations_of_interest$Added_Date + locations_of_interest$Added_Time, na.rm = TRUE))),
-
+    p(
+        "Please refer to the official ",
+        a("Ministry of Health website's locations of interest",
+          href = "https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-health-advice-public/contact-tracing-covid-19/covid-19-contact-tracing-locations-interest"),
+        " for the most up to date list of locations."
+    ), 
 
     material_row(
         material_column(
@@ -99,8 +100,7 @@ ui <- material_page(
                                 unique(locations_of_interest$Added_Date),
                                 decreasing = TRUE
                             ))),
-                selected = "All",
-                color = "blue"
+                selected = "All"
             )
         ),
         material_column(
@@ -109,8 +109,7 @@ ui <- material_page(
                 input_id =  "city",
                 label = "City",
                 choices = c("All", sort(unique(locations_of_interest$City))),
-                selected = "All",
-                color = "blue"
+                selected = "All"
             )
         ),
        
@@ -135,27 +134,15 @@ ui <- material_page(
             
             material_checkbox(
                 "public_transport", 
-                strong("Public Transport only (Nothing will display on the map)"), 
+                strong("Transport only (Map will be removed)"), 
                 initial_value = FALSE)
         )
         
     ),
     
     material_row(
-        material_column(
-            width = 6,
-            material_card(
-                title = "Locations of interest map (Click on circle markers for more info)",
-                leafletOutput("map")
-            )
-        ),
-        material_column(
-            width = 6,
-            material_card(
-                title = "Locations of interest table",
-                reactableOutput("table")
-            )
-        )
+        uiOutput("map_UI"),
+        uiOutput("table_UI")
     )
 )
 
@@ -166,7 +153,8 @@ server <- function(input, output) {
   
     new_location_data <-
         reactive({
-            req(input$start_time)
+            req(input$public_transport, input$city, input$added, 
+                input$start_time)
             
             if (input$public_transport) {
                 locations_of_interest <-
@@ -198,14 +186,8 @@ server <- function(input, output) {
         })
     
      
-    
-    
     output$map <-
         renderLeaflet({
-            
-            # material_spinner_show(session, "map")
-            # 
-            # Sys.sleep(2.5) # sleep to show spinner example longer 
             
             new_location_data() %>%
                 leaflet(options = leafletOptions(zoomControl = FALSE)) %>%
@@ -215,12 +197,23 @@ server <- function(input, output) {
                                  popup = ~ info)
         })
     
+    output$map_UI <- 
+        renderUI({
+        if(input$public_transport){return(NULL)}
+        
+        material_column(
+            width = 6,
+            material_card(
+                title = "Map (Click on circle markers for more info)",
+                leafletOutput("map")
+            )
+        )
+        
+    })
+    
     
     output$table <-
         renderReactable({
-            # material_spinner_show(session, "table")
-            # 
-            # Sys.sleep(2.5) # sleep to show spinner example longer 
             
             new_location_data() %>%
                 select(Added_Date, Event:End) %>%
@@ -228,7 +221,19 @@ server <- function(input, output) {
                 reactable(defaultPageSize = 5, searchable = TRUE)
         })      
 
-    
+    output$table_UI <- renderUI({
+        if (input$public_transport) {
+            material_column(width = 12,
+                            material_card(title = "Table",
+                                          reactableOutput("table")))
+        } else {
+            material_column(width = 6,
+                            material_card(title = "Table",
+                                          reactableOutput("table")))
+            
+        }
+        
+    })
     
 }
 

@@ -2,7 +2,10 @@
 
 This shiny application helps the users to visualise the map and table of locations of interest for people who may be contacts of COVID-19 cases in the community. This shiny application is currently live and can be found in <https://kcha193.shinyapps.io/covid_locations/>. The screenshot of the shiny app is shown below.
 
+[![Screenshot of the shiny app with mobile](screenshot_mobile.png "Screenshot of the shiny app")](https://kcha193.shinyapps.io/covid_locations/)
+
 [![Screenshot of the shiny app](screenshot.png "Screenshot of the shiny app")](https://kcha193.shinyapps.io/covid_locations/)
+
 
 This application provides users to filter down the selection for
 
