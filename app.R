@@ -81,8 +81,8 @@ ui <- material_page(
     ), 
     
     p("Ministry of Health Data was last updated at", 
-      strong(max(locations_of_interest$Added_Date + locations_of_interest$Added_Time, na.rm = TRUE))),
-    p(
+      strong(max(locations_of_interest$Added_Date + locations_of_interest$Added_Time, na.rm = TRUE)),
+
         "Please refer to the official ",
         a("Ministry of Health website's locations of interest",
           href = "https://www.health.govt.nz/our-work/diseases-and-conditions/covid-19-novel-coronavirus/covid-19-health-advice-public/contact-tracing-covid-19/covid-19-contact-tracing-locations-interest"),
@@ -153,8 +153,7 @@ server <- function(input, output) {
   
     new_location_data <-
         reactive({
-            req(input$public_transport, input$city, input$added, 
-                input$start_time)
+            req(input$city, input$added, input$start_time)
             
             if (input$public_transport) {
                 locations_of_interest <-
