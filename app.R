@@ -52,10 +52,11 @@ locations_of_interest$Added_Date[is.na(locations_of_interest$Added_Date)] <-
 
 # Define UI for application that draws a histogram
 ui <- material_page(
-    title = "COVID-19: Contact tracing locations of interest",
+    title = "COVID-19",
 
     nav_bar_color = "teal lighten-1", 
 
+    h4("Contact tracing locations of interest"),
     
     material_side_nav(
         image_source = "https://cdn.auckland.ac.nz/aem/content/auckland/en/news/2021/05/19/lessons-from-our-covid-tracing-app/jcr:content/leftpar/imagecomponent/image.img.1024.medium.jpg/1621379069999.jpg",
@@ -224,7 +225,7 @@ server <- function(input, output) {
             new_location_data() %>%
                 select(Added_Date, Event:End) %>%
                 arrange(desc(Added_Date)) %>%
-                reactable(defaultPageSize = 5)
+                reactable(defaultPageSize = 5, searchable = TRUE)
         })      
 
     
