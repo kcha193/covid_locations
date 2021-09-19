@@ -93,7 +93,7 @@ ui <- material_page(
         material_column(
             width = 3,
             material_dropdown(
-                input_id ="added",
+                input_id = "added",
                 label = "Date new location added",
                 choices = c("All",
                             as.character(sort(
@@ -134,7 +134,7 @@ ui <- material_page(
             
             material_checkbox(
                 "public_transport", 
-                strong("Transport only (Map will be removed)"), 
+                strong("Transportation only (Map will be removed)"), 
                 initial_value = FALSE)
         )
         
@@ -148,9 +148,9 @@ ui <- material_page(
 
 
 # Define server logic required to draw a histogram
-server <- function(input, output) {
+server <- function(input, output, session) {
     
-  
+    
     new_location_data <-
         reactive({
             req(input$city, input$added, input$start_time)
@@ -184,6 +184,44 @@ server <- function(input, output) {
             return(locations_of_interest)
         })
     
+    
+    # Change the value of a material_dropdown on the client
+    observe({
+        update_material_dropdown(
+            session,
+            input_id = "start_time",
+            choices = c("All",
+                        as.character(sort(
+                            unique(as.Date(new_location_data()$Start_time)),
+                            decreasing = TRUE
+                        ))),
+            value = input$start_time
+        )
+        
+        update_material_dropdown(
+            session,
+            input_id =  "city",
+            choices = c("All", sort(unique(
+                new_location_data()$City
+            ))),
+            value = input$city
+        )
+        
+        update_material_dropdown(
+            session,
+            input_id = "added",
+            choices = c("All",
+                        as.character(sort(
+                            unique(new_location_data()$Added_Date),
+                            decreasing = TRUE
+                        ))),
+            value = input$added
+        )
+    })
+     
+    
+    
+    
      
     output$map <-
         renderLeaflet({
@@ -198,7 +236,9 @@ server <- function(input, output) {
     
     output$map_UI <- 
         renderUI({
-        if(input$public_transport){return(NULL)}
+            if (input$public_transport) {
+                return(NULL)
+            }
         
         material_column(
             width = 6,
@@ -223,11 +263,11 @@ server <- function(input, output) {
     output$table_UI <- renderUI({
         if (input$public_transport) {
             material_column(width = 12,
-                            material_card(title = "Table",
+                            material_card(title = "",
                                           reactableOutput("table")))
         } else {
             material_column(width = 6,
-                            material_card(title = "Table",
+                            material_card(title = "",
                                           reactableOutput("table")))
             
         }
