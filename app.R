@@ -14,9 +14,9 @@ locations_of_interest <-
   mutate(
     Start_time = as.POSIXct(Start, format = "%d/%m/%Y, %I:%M %p"),
     End_time = as.POSIXct(End, format = "%d/%m/%Y, %I:%M %p"),
-    Added_Date = lubridate::dmy(sapply(strsplit(Added, " "), function(x)
+    Added_Date = lubridate::ymd(sapply(strsplit(as.character(Added), " "), function(x)
       x[1])),
-    Added_Time = lubridate::hm(sapply(strsplit(Added, " "), function(x)
+    Added_Time = lubridate::hms(sapply(strsplit(as.character(Added), " "), function(x)
       x[2])),
     info =  paste0(
       "<H6>Event infomation</H6>",
@@ -36,20 +36,6 @@ locations_of_interest <-
     public_transport = ifelse(is.na(LAT), TRUE, FALSE)
   ) 
 
-# For different date formats 
-locations_of_interest$Added_Date[is.na(locations_of_interest$Added_Date)] <-
-  lubridate::ymd(sapply(strsplit(locations_of_interest$Added[
-    is.na(locations_of_interest$Added_Date)], " "), function(x) x[1]))
-
-locations_of_interest$Added_Time[is.na(locations_of_interest$Added_Time)] <-
-  lubridate::hms(sapply(strsplit(locations_of_interest$Added[
-    is.na(locations_of_interest$Added_Time)], " "), function(x) x[2]))
-
-# Use the initial date for missing entries
-locations_of_interest$Added_Date[is.na(locations_of_interest$Added_Date)] <-
-  min(locations_of_interest$Added_Date, na.rm = TRUE) - 1
-
-
 # Define UI for application that draws a histogram
 ui <- material_page(
     title = "NZ COVID-19",
@@ -60,9 +46,6 @@ ui <- material_page(
     
     material_side_nav(
         image_source = "https://cdn.auckland.ac.nz/aem/content/auckland/en/news/2021/05/19/lessons-from-our-covid-tracing-app/jcr:content/leftpar/imagecomponent/image.img.1024.medium.jpg/1621379069999.jpg",
-        
-        
-        
         p(
             "Map and table are based from the data in the Ministry of Health's COVID-19: Contact tracing locations of interest in ",
             a("here",
