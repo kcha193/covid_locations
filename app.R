@@ -18,6 +18,10 @@ locations_of_interest <-
       x[1])),
     Added_Time = lubridate::hms(sapply(strsplit(as.character(Added), " "), function(x)
       x[2])),
+    Update_Date = lubridate::ymd(sapply(strsplit(as.character(Updated), " "), function(x)
+      x[1])),
+    Update_Time = lubridate::hms(sapply(strsplit(as.character(Updated), " "), function(x)
+      x[2])),
     info =  paste0(
       "<H6>Event infomation</H6>",
       "<strong>Event</strong>: ", Event,
@@ -35,6 +39,31 @@ locations_of_interest <-
     ),
     public_transport = ifelse(is.na(LAT), TRUE, FALSE)
   ) 
+
+# For different date formats 
+locations_of_interest$Added_Date[is.na(locations_of_interest$Added_Date)] <-
+ lubridate::dmy(sapply(strsplit(locations_of_interest$Added[
+    is.na(locations_of_interest$Added_Date)], " "), function(x) x[1]))
+
+locations_of_interest$Added_Time[is.na(locations_of_interest$Added_Time)] <-
+  lubridate::hm(sapply(strsplit(locations_of_interest$Added[
+   is.na(locations_of_interest$Added_Time)], " "), function(x) x[2]))
+
+locations_of_interest$Update_Date[is.na(locations_of_interest$Update_Date)] <-
+ lubridate::dmy(sapply(strsplit(locations_of_interest$Updated[
+    is.na(locations_of_interest$Update_Date)], " "), function(x) x[1]))
+
+locations_of_interest$Update_Time[is.na(locations_of_interest$Update_Time)] <-
+  lubridate::hm(sapply(strsplit(locations_of_interest$Updated[
+   is.na(locations_of_interest$Update_Time)], " "), function(x) x[2]))
+
+# Update the latest added Date/Time with the newly updated times
+locations_of_interest$Added_Date[!is.na(locations_of_interest$Update_Date)] <- 
+  locations_of_interest$Update_Date[!is.na(locations_of_interest$Update_Date)]
+
+locations_of_interest$Added_Time[!is.na(locations_of_interest$Update_Time)] <- 
+  locations_of_interest$Update_Time[!is.na(locations_of_interest$Update_Time)]
+
 
 # Define UI for application that draws a histogram
 ui <- material_page(
@@ -54,6 +83,8 @@ ui <- material_page(
             a("creative commons license",
               href = "https://www.health.govt.nz/about-site/copyright")
         ),
+        h6("Latest Update:"),
+        h6("2021-10-03"),
         h5("Contact:"),
         h6(a("Kevin Chang", href = "mailto:kevin.ct.chang@gmail.com")),
         p(
@@ -77,7 +108,7 @@ ui <- material_page(
             width = 3,
             material_dropdown(
                 input_id = "added",
-                label = "Date new location added",
+                label = "Date new location added/updated",
                 choices = c("All",
                             as.character(sort(
                                 unique(locations_of_interest$Added_Date),
@@ -132,12 +163,13 @@ ui <- material_page(
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
-    
-    
+ 
+
+     
     new_location_data <-
         reactive({
             req(input$city, input$added, input$start_time)
-            
+
             if (input$public_transport) {
                 locations_of_interest <-
                     locations_of_interest %>%
@@ -233,14 +265,15 @@ server <- function(input, output, session) {
         
     })
     
-    
+     
     output$table <-
         renderReactable({
             
             new_location_data() %>%
                 select(Added_Date, Event:End) %>%
                 arrange(desc(Added_Date)) %>%
-                reactable(defaultPageSize = 5, searchable = TRUE)
+                reactable(defaultPageSize = 5, onClick = "select",
+                          searchable = TRUE, highlight = TRUE, compact = TRUE)
         })      
 
     output$table_UI <- renderUI({
