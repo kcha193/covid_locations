@@ -49,13 +49,13 @@ locations_of_interest$Added_Time[is.na(locations_of_interest$Added_Time)] <-
   lubridate::hm(sapply(strsplit(locations_of_interest$Added[
    is.na(locations_of_interest$Added_Time)], " "), function(x) x[2]))
 
-locations_of_interest$Update_Date[is.na(locations_of_interest$Update_Date)] <-
- lubridate::dmy(sapply(strsplit(locations_of_interest$Updated[
-    is.na(locations_of_interest$Update_Date)], " "), function(x) x[1]))
-
-locations_of_interest$Update_Time[is.na(locations_of_interest$Update_Time)] <-
-  lubridate::hm(sapply(strsplit(locations_of_interest$Updated[
-   is.na(locations_of_interest$Update_Time)], " "), function(x) x[2]))
+# locations_of_interest$Update_Date[is.na(locations_of_interest$Update_Date)] <-
+#  lubridate::dmy(sapply(strsplit(locations_of_interest$Updated[
+#     is.na(locations_of_interest$Update_Date)], " "), function(x) x[1]))
+# 
+# locations_of_interest$Update_Time[is.na(locations_of_interest$Update_Time)] <-
+#   lubridate::hm(sapply(strsplit(locations_of_interest$Updated[
+#    is.na(locations_of_interest$Update_Time)], " "), function(x) x[2]))
 
 # Update the latest added Date/Time with the newly updated times
 locations_of_interest$Added_Date[!is.na(locations_of_interest$Update_Date)] <- 
